@@ -1,0 +1,118 @@
+{
+  "title": "PulseQueue Overview",
+  "uid": "pulsequeue-overview",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "refresh": "5s",
+  "time": { "from": "now-30m", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Queue Depth (steps waiting)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "pulsequeue_queue_depth",
+          "legendFormat": "{{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Step Execution Latency (p50 / p95 / p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(pulsequeue_step_execution_duration_seconds_bucket[5m])) by (le, type))",
+          "legendFormat": "p50 {{type}}",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(pulsequeue_step_execution_duration_seconds_bucket[5m])) by (le, type))",
+          "legendFormat": "p95 {{type}}",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(pulsequeue_step_execution_duration_seconds_bucket[5m])) by (le, type))",
+          "legendFormat": "p99 {{type}}",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Step Throughput (per second)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(pulsequeue_steps_succeeded_total[5m])) by (type)",
+          "legendFormat": "succeeded {{type}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(pulsequeue_steps_retried_total[5m])) by (type)",
+          "legendFormat": "retried {{type}}",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate(pulsequeue_steps_dead_lettered_total[5m])) by (type, reason)",
+          "legendFormat": "dead-lettered {{type}} ({{reason}})",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Run Outcomes (per minute)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(pulsequeue_runs_finalized_total[5m])) by (status) * 60",
+          "legendFormat": "{{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "API Request Rate by Status",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "sum(rate(pulsequeue_http_requests_total[5m])) by (status)",
+          "legendFormat": "HTTP {{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "API Request Latency (p95 by route)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(pulsequeue_http_request_duration_seconds_bucket[5m])) by (le, route))",
+          "legendFormat": "p95 {{route}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Active WebSocket Connections",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 24 },
+      "targets": [
+        { "expr": "pulsequeue_ws_connections_active", "refId": "A" }
+      ]
+    }
+  ]
+}

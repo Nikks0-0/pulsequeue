@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: "pulsequeue-api"
+    static_configs:
+      - targets: ["api:4000"]
+    metrics_path: /metrics
+
+  - job_name: "pulsequeue-worker"
+    static_configs:
+      - targets: ["worker:9100"]
+    metrics_path: /metrics
+    # NOTE: with `docker compose up --scale worker=N`, Docker's internal DNS
+    # round-robins the "worker" hostname across replicas, so this single
+    # target only ever reaches ONE replica's metrics, not all of them. A
+    # real deployment would use a service-discovery mechanism (Kubernetes
+    # pod annotations + kube-state-metrics, Consul, or an EC2/ECS SD config)
+    # so Prometheus discovers and scrapes every replica individually. Worth
+    # naming as a known limitation if asked "how would this differ in prod."
